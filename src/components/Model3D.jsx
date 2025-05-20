@@ -1,67 +1,162 @@
-import React, { Suspense, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, useGLTF, Environment } from '@react-three/drei'
-// import { useControls, Leva } from 'leva'
+import React, { Suspense, useRef, useState, useEffect } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, useGLTF, Environment } from '@react-three/drei';
+import * as THREE from 'three';
 
-// הקומפוננטה שטוענת את המודל התלת מימדי עם ערכים קבועים מהתמונה
-function Model() {
-  const { scene } = useGLTF('/glb/dor5.glb')
-  
-  // ערכים קבועים לפי התמונה
-  const fixedScale = 5.4
-  const fixedPosition = [-2.5, -0.1, 1.5]
-  const fixedRotation = [-0.4, -44.7, -0.1]
-  
-  return (
-    <primitive 
-      object={scene} 
-      scale={fixedScale}
-      position={fixedPosition}
-      rotation={[fixedRotation[0] * (Math.PI/180), fixedRotation[1] * (Math.PI/180), fixedRotation[2] * (Math.PI/180)]}
-    />
-  )
+// מפת שמות בעברית לאובייקטים בסצנה
+const ELEMENTS_MAP = {
+  "ComputerScreen": "מסך מחשב עם שורות קוד",
+  "DeskLamp": "מנורת שולחן",
+  "Gamepad": "שלט / ג'ויסטיק על השולחן",
+  "Keyboard": "מקלדת",
+  "TostitosBag": "שקית חטיף טוסטיטוס",
+  "Desk": "שולחן",
+  "Chair": "כיסא",
+  "Poster_OnceUponATime": "פוסטר שמאלי - סרט הוליוודי",
+  "Poster_ReadyPlayerOne": "פוסטר ימין - Ready Player One",
+  "Window": "חלון",
+  "Monitor": "מסך מחשב",
+  "Computer": "מחשב",
+  "Mouse": "עכבר"
+};
+
+function logSceneObjects(scene) {
+  console.log("Objects in the scene:");
+  scene.traverse((object) => {
+    if (object.isMesh) {
+      console.log(`Found mesh: ${object.name}`);
+    }
+  });
 }
 
-// הקומפוננטה שמגבילה את התנועה של הבקרות
-function LimitedControls() {
-  const controlsRef = useRef()
-  
-  // הגדרות בסיסיות לבקרות
-  const fixedControls = {
-    minDistance: 3,
-    maxDistance: 30,
-    minPolarAngle: Math.PI / 4,
-    maxPolarAngle: Math.PI / 2,
-    minAzimuthAngle: -Math.PI / 2,
-    maxAzimuthAngle: Math.PI / 2,
-    enableZoom: true,
-    enablePan: false,
-    enableRotate: true,
-    autoRotate: false,
-    dampingFactor: 0.07
-  }
+function Model({ setHovered }) {
+  const { scene } = useGLTF('/glb/dor5.glb');
+  const interactiveObjects = useRef({});
+
+  useEffect(() => {
+    logSceneObjects(scene);
+    interactiveObjects.current = {};
+
+    scene.traverse((object) => {
+      if (object.isMesh) {
+        for (const [key, description] of Object.entries(ELEMENTS_MAP)) {
+          if (
+            object.name.toLowerCase().includes(key.toLowerCase()) ||
+            object.name === key ||
+            (object.parent && object.parent.name.toLowerCase().includes(key.toLowerCase()))
+          ) {
+            object.userData.name = key;
+            object.userData.description = description;
+            interactiveObjects.current[key] = object;
+            object.raycast = new THREE.Mesh().raycast;
+            break;
+          }
+        }
+      }
+    });
+  }, [scene]);
+
+  const handlePointerOver = (e) => {
+    e.stopPropagation();
+    const obj = e.object;
+    const name = obj.userData.name;
+
+    if (name) {
+      setHovered(name);
+
+      if (!obj.userData.origMaterial) {
+        obj.userData.origMaterial = obj.material;
+      }
+
+      if (obj.material) {
+        const highlightMaterial = obj.material.clone();
+        highlightMaterial.emissive = new THREE.Color(0x0000ff);
+        highlightMaterial.emissiveIntensity = 0.6;
+        obj.material = highlightMaterial;
+      }
+
+      document.body.style.cursor = 'pointer';
+    }
+  };
+
+  const handlePointerOut = (e) => {
+    e.stopPropagation();
+    const obj = e.object;
+    const name = obj.userData.name;
+
+    if (name) {
+      setHovered(null);
+      if (obj.userData.origMaterial) {
+        obj.material = obj.userData.origMaterial;
+      }
+      document.body.style.cursor = 'auto';
+    }
+  };
+
+  const fixedScale = 5.4;
+  const fixedPosition = [-2.5, -0.1, 1.5];
+  const fixedRotation = [
+    -0.4 * (Math.PI / 180),
+    -44.7 * (Math.PI / 180),
+    -0.1 * (Math.PI / 180)
+  ];
 
   return (
-    <OrbitControls 
-      ref={controlsRef}
-      {...fixedControls}
-      enableDamping
+    <primitive
+      object={scene}
+      scale={fixedScale}
+      position={fixedPosition}
+      rotation={fixedRotation}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
     />
-  )
+  );
+}
+
+function LimitedControls() {
+  const controlsRef = useRef();
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      minDistance={3}
+      maxDistance={30}
+      minPolarAngle={Math.PI / 4}
+      maxPolarAngle={Math.PI / 2}
+      minAzimuthAngle={-Math.PI / 2}
+      maxAzimuthAngle={Math.PI / 2}
+      enableZoom={true}
+      enablePan={false}
+      enableRotate={true}
+      autoRotate={false}
+      enableDamping
+      dampingFactor={0.07}
+    />
+  );
+}
+
+function HoverInfo({ hovered }) {
+  if (!hovered) return null;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: '20px',
+      left: '20px',
+      background: 'rgba(0,0,0,0.7)',
+      color: 'white',
+      padding: '10px',
+      borderRadius: '5px',
+      fontFamily: 'Arial, sans-serif',
+      zIndex: 1000,
+      direction: 'rtl'
+    }}>
+      {ELEMENTS_MAP[hovered]}
+    </div>
+  );
 }
 
 const Model3D = () => {
-  // הוספת שליטה במצלמה דרך leva
-  /* 
-  const { cameraX, cameraY, cameraZ, cameraFov } = useControls('מצלמה', {
-    cameraX: { value: 0, min: -15, max: 15, step: 0.1 },
-    cameraY: { value: 2, min: -10, max: 10, step: 0.1 },
-    cameraZ: { value: 15, min: 5, max: 30, step: 0.1, label: 'מרחק (הרחקה)' },
-    cameraFov: { value: 45, min: 30, max: 90, step: 1, label: 'שדה ראייה' }
-  })
-  */
-  
-  // ערכים קבועים למצלמה במקום השימוש ב-leva
+  const [hovered, setHovered] = useState(null);
   const cameraX = 0;
   const cameraY = 2;
   const cameraZ = 15;
@@ -69,31 +164,41 @@ const Model3D = () => {
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden' }}>
-      <Canvas 
+      <Canvas
         style={{ background: '#f0f0f0' }}
         camera={{ position: [cameraX, cameraY, cameraZ], fov: cameraFov }}
+        onCreated={({ gl }) => {
+          gl.physicallyCorrectLights = true;
+          gl.outputEncoding = THREE.sRGBEncoding;
+        }}
       >
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <Suspense fallback={null}>
-          <Model />
+          <Model setHovered={setHovered} />
           <Environment preset="apartment" />
         </Suspense>
         <LimitedControls />
       </Canvas>
-      {/* 
-      <Leva 
-        oneLineLabels={true} 
-        flat={true} 
-        collapsed={false}
-        theme={{
-          sizes: { rootWidth: '300px' },
-          colors: { accent1: '#4263eb' }
-        }}
-      />
-      */}
-    </div>
-  )
-}
+      <HoverInfo hovered={hovered} />
 
-export default Model3D
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          background: 'rgba(0,0,0,0.7)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          fontFamily: 'monospace',
+          zIndex: 1000
+        }}>
+          Hovered: {hovered || 'none'}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Model3D;
