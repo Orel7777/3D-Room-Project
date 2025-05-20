@@ -92,6 +92,23 @@ function Model({ setHovered }) {
       document.body.style.cursor = 'auto';
     }
   };
+  
+  const handleClick = (e) => {
+    e.stopPropagation();
+    const obj = e.object;
+    const name = obj.userData.name;
+    
+    if (name) {
+      const meshInfo = {
+        name: obj.name,
+        type: obj.type,
+        geometry: obj.geometry ? obj.geometry.type : "אין מידע",
+        materialType: obj.material ? obj.material.type : "אין מידע"
+      };
+      
+      alert(`מידע על ${ELEMENTS_MAP[name]}:\nשם האובייקט: ${meshInfo.name}\nסוג: ${meshInfo.type}\nגיאומטריה: ${meshInfo.geometry}\nחומר: ${meshInfo.materialType}`);
+    }
+  };
 
   const fixedScale = 5.4;
   const fixedPosition = [-2.5, -0.1, 1.5];
@@ -109,6 +126,7 @@ function Model({ setHovered }) {
       rotation={fixedRotation}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
+      onClick={handleClick}
     />
   );
 }
