@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const HomePage = () => {
+const HomePage = ({ onLookCloser }) => {
   const [hover, setHover] = useState(false)
 
   const buttonStyle = {
@@ -65,6 +65,7 @@ const HomePage = () => {
         style={buttonStyle}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        onClick={onLookCloser}
       >
         LOOK CLOSER
       </button>
