@@ -60,6 +60,13 @@ function Model({ setHovered }) {
     "base" // הג'ויסטיק
   ];
 
+  // ערכי הסיבוב ההתחלתיים - לשימוש באיפוס
+  const initialRotation = [
+    -0.4 * (Math.PI / 180),
+    -44.7 * (Math.PI / 180),
+    -0.1 * (Math.PI / 180)
+  ];
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       switch(event.key) {
@@ -75,7 +82,21 @@ function Model({ setHovered }) {
           rotationState.current.arrowUp = true;
           event.preventDefault();
           break;
-        // לא מאפשר לחץ למטה בכלל
+        case 'ArrowDown':
+          rotationState.current.arrowDown = true;
+          event.preventDefault();
+          break;
+        // הוספת איפוס עם מקש Space
+        case ' ':
+          if (modelRef.current) {
+            modelRef.current.rotation.set(
+              initialRotation[0],
+              initialRotation[1],
+              initialRotation[2]
+            );
+          }
+          event.preventDefault();
+          break;
         default:
           break;
       }
@@ -91,6 +112,9 @@ function Model({ setHovered }) {
           break;
         case 'ArrowUp':
           rotationState.current.arrowUp = false;
+          break;
+        case 'ArrowDown':
+          rotationState.current.arrowDown = false;
           break;
         default:
           break;
@@ -115,7 +139,7 @@ function Model({ setHovered }) {
     // הגדרת מגבלות סיבוב זהות למגבלות של ה-OrbitControls
     const minAzimuthAngle = -Math.PI / 12; // כ-15 מעלות שמאלה
     const maxAzimuthAngle = Math.PI / 12;  // כ-15 מעלות ימינה
-    const minPolarAngle = Math.PI / 3; // הגבלה חזקה יותר
+    const minPolarAngle = Math.PI / 30; // כ-6 מעלות - מאפשר הסתכלות כמעט עד הרצפה
     const maxPolarAngle = Math.PI / 2.2; // קצת פחות מ-90 מעלות
     
     const fixedYRotationBase = -44.7 * (Math.PI / 180); // הסיבוב הבסיסי שהוגדר ב-fixedRotation
@@ -163,8 +187,18 @@ function Model({ setHovered }) {
       }
     }
     
-    // חץ למטה - כלל לא מאפשר לפי דרישת הלקוח
-    // יש להסיר את התגובה למקש למטה
+    // חץ למטה - מסובב למטה סביב ציר X
+    if (rotationState.current.arrowDown) {
+      const nextRotation = modelRef.current.rotation.x - rotationSpeed;
+      const nextRelativeRotation = nextRotation - fixedXRotationBase;
+      
+      if (nextRelativeRotation >= minPolarAngle) {
+        modelRef.current.rotation.x -= rotationSpeed;
+      } else {
+        // הגענו לגבול התחתון - מקבע את הסיבוב בדיוק בגבול
+        modelRef.current.rotation.x = fixedXRotationBase + minPolarAngle;
+      }
+    }
   });
 
   useEffect(() => {
@@ -305,15 +339,27 @@ function Model({ setHovered }) {
 function LimitedControls() {
   const controlsRef = useRef();
   
+  // פונקציה לאיפוס המצלמה למצב ההתחלתי
+  useEffect(() => {
+    const handleReset = (e) => {
+      if (e.key === ' ' && controlsRef.current) {
+        controlsRef.current.reset();
+      }
+    };
+    
+    window.addEventListener('keydown', handleReset);
+    return () => window.removeEventListener('keydown', handleReset);
+  }, []);
+  
   return (
     <OrbitControls
       ref={controlsRef}
-      minDistance={8}
-      maxDistance={18}
-      minPolarAngle={Math.PI / 3}
-      maxPolarAngle={Math.PI / 2.2}
-      minAzimuthAngle={-Math.PI / 12}
-      maxAzimuthAngle={Math.PI / 12}
+      minDistance={8} // מרחק מינימלי גדול יותר מהמודל
+      maxDistance={18} // מרחק מקסימלי מוגבל - הגדלתי כדי לאפשר זום אאוט נוסף
+      minPolarAngle={Math.PI / 30} // כ-6 מעלות - מאפשר הסתכלות כמעט עד הרצפה
+      maxPolarAngle={Math.PI / 2.2} // קצת פחות מ-90 מעלות - למנוע הסתכלות למטה מדי
+      minAzimuthAngle={-Math.PI / 12} // כ-15 מעלות שמאלה
+      maxAzimuthAngle={Math.PI / 12} // כ-15 מעלות ימינה
       enableZoom={true}
       enablePan={false}
       enableRotate={true}
@@ -348,29 +394,21 @@ function HoverInfo({ hovered }) {
 const Model3D = () => {
   const [hovered, setHovered] = useState(null);
   
-  const cameraX = 1;
-  const cameraY = 2.2;
-  const cameraZ = 14;
-  const cameraFov = 45;
+  const cameraX = 1;  // מיקום מעט מוזז לשמאל
+  const cameraY = 2.2; // גובה שמאפשר ראייה טובה של כל החדר
+  const cameraZ = 14;  // מרחק שמאפשר לראות את כל החדר
+  const cameraFov = 45; // שדה ראייה רחב יותר לתחושה טבעית
 
+  // הוסף פקד מקלדת גלובלי למניעת גלילה בעת לחיצה על חצים
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      const model = document.getElementById('model-container');
-      
-      if (!model) return;
-      
-      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp'].includes(event.key)) {
-        return;
+    const preventDefaultArrows = (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
       }
-      
-      event.preventDefault();
     };
     
-    window.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    window.addEventListener('keydown', preventDefaultArrows);
+    return () => window.removeEventListener('keydown', preventDefaultArrows);
   }, []);
 
   return (
@@ -392,6 +430,23 @@ const Model3D = () => {
         <LimitedControls />
       </Canvas>
       <HoverInfo hovered={hovered} />
+
+      {/* הוספת הודעה קטנה לגבי מקש הרווח */}
+      <div style={{
+        position: 'absolute',
+        bottom: '20px',
+        right: '20px',
+        background: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '14px',
+        zIndex: 1000,
+        direction: 'rtl'
+      }}>
+        לחץ על מקש רווח (Space) לחזרה למבט המקורי
+      </div>
 
       {process.env.NODE_ENV === 'development' && (
         <div style={{
