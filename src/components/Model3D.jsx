@@ -140,7 +140,8 @@ function Model({ setHovered }) {
     const minAzimuthAngle = -Math.PI / 12; // כ-15 מעלות שמאלה
     const maxAzimuthAngle = Math.PI / 12;  // כ-15 מעלות ימינה
     const minPolarAngle = Math.PI / 30; // כ-6 מעלות - מאפשר הסתכלות כמעט עד הרצפה
-    const maxPolarAngle = Math.PI / 2.2; // קצת פחות מ-90 מעלות
+    const maxPolarAngle = Math.PI / 4; // 45 מעלות
+
     
     const fixedYRotationBase = -44.7 * (Math.PI / 180); // הסיבוב הבסיסי שהוגדר ב-fixedRotation
     const fixedXRotationBase = -0.4 * (Math.PI / 180); // הסיבוב הבסיסי שהוגדר ב-fixedRotation
@@ -356,7 +357,7 @@ function LimitedControls() {
       ref={controlsRef}
       minDistance={8} // מרחק מינימלי גדול יותר מהמודל
       maxDistance={18} // מרחק מקסימלי מוגבל - הגדלתי כדי לאפשר זום אאוט נוסף
-      minPolarAngle={Math.PI / 30} // כ-6 מעלות - מאפשר הסתכלות כמעט עד הרצפה
+      minPolarAngle={Math.PI / 2.5} // בערך 72 מעלות - מגביל את התנועה כלפי מעלה משמעותית
       maxPolarAngle={Math.PI / 2.2} // קצת פחות מ-90 מעלות - למנוע הסתכלות למטה מדי
       minAzimuthAngle={-Math.PI / 12} // כ-15 מעלות שמאלה
       maxAzimuthAngle={Math.PI / 12} // כ-15 מעלות ימינה
