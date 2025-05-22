@@ -40,6 +40,32 @@ function logSceneObjects(scene) {
   console.log("================================================");
 }
 
+// Loading Component
+function LoadingScreen() {
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: '#1a1611',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      color: 'white',
+      fontSize: '24px',
+      fontFamily: 'Arial, sans-serif',
+      zIndex: 9999
+    }}>
+      <div>
+        <div>טוען מודל 3D...</div>
+        <div style={{ marginTop: '20px', fontSize: '16px' }}>אנא המתן</div>
+      </div>
+    </div>
+  );
+}
+
 function Model({ setHovered }) {
   const { scene } = useGLTF('/glb/3-test.glb');
   const interactiveObjects = useRef({});
@@ -206,8 +232,33 @@ function Model({ setHovered }) {
     logSceneObjects(scene);
     interactiveObjects.current = {};
 
+    // אופטימיזציה וזיהוי אובייקטים
     scene.traverse((object) => {
       if (object.isMesh) {
+        // אופטימיזציה לביצועים
+        object.castShadow = false; // הסרת צללים מיותרים
+        object.receiveShadow = false;
+        object.frustumCulled = true; // הסרת אובייקטים שמחוץ לטווח הראייה
+        
+        // שיפור החומרים להיות יותר זוהרים
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach(mat => {
+              if (mat.isMeshStandardMaterial || mat.isMeshPhongMaterial) {
+                mat.roughness = 0.3; // פחות חספוס = יותר זוהר
+                mat.metalness = 0.1; // מעט מתכתיות
+                mat.envMapIntensity = 1.5; // השתקפות חזקה יותר מהסביבה
+              }
+            });
+          } else {
+            if (object.material.isMeshStandardMaterial || object.material.isMeshPhongMaterial) {
+              object.material.roughness = 0.3;
+              object.material.metalness = 0.1;
+              object.material.envMapIntensity = 1.5;
+            }
+          }
+        }
+
         // בדיקה האם האובייקט נמצא ברשימת האובייקטים הלחיצים
         const isInteractive = INTERACTIVE_OBJECTS.some(name => 
           object.name === name || 
@@ -247,9 +298,6 @@ function Model({ setHovered }) {
         } else {
           // אובייקט שאינו לחיץ - ניקוי המידע
           object.userData.isInteractive = false;
-          
-          // שימו לב: איננו משנים את ה-raycast של אובייקטים לא אינטראקטיביים
-          // כדי שהם יעבירו את אירועי המצביע לאובייקטים מאחוריהם
         }
       }
     });
@@ -271,8 +319,8 @@ function Model({ setHovered }) {
 
       if (obj.material) {
         const highlightMaterial = obj.material.clone();
-        highlightMaterial.emissive = new THREE.Color(0x0000ff);
-        highlightMaterial.emissiveIntensity = 1.0;
+        highlightMaterial.emissive = new THREE.Color(0x0066ff);
+        highlightMaterial.emissiveIntensity = 0.3;
         obj.material = highlightMaterial;
       }
 
@@ -379,13 +427,15 @@ function HoverInfo({ hovered }) {
       position: 'absolute',
       bottom: '20px',
       left: '20px',
-      background: 'rgba(0,0,0,0.7)',
+      background: 'rgba(0,0,0,0.8)',
       color: 'white',
-      padding: '10px',
-      borderRadius: '5px',
+      padding: '12px',
+      borderRadius: '8px',
       fontFamily: 'Arial, sans-serif',
+      fontSize: '16px',
       zIndex: 1000,
-      direction: 'rtl'
+      direction: 'rtl',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
     }}>
       {ELEMENTS_MAP[hovered]}
     </div>
@@ -394,6 +444,7 @@ function HoverInfo({ hovered }) {
 
 const Model3D = () => {
   const [hovered, setHovered] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const cameraX = 1;  // מיקום מעט מוזז לשמאל
   const cameraY = 2.2; // גובה שמאפשר ראייה טובה של כל החדר
@@ -412,21 +463,277 @@ const Model3D = () => {
     return () => window.removeEventListener('keydown', preventDefaultArrows);
   }, []);
 
+  // Handle loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // הצגת מסך טעינה למשך 2 שניות
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div id="model-container" style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, overflow: 'hidden' }}>
+      {isLoading && <LoadingScreen />}
+      
       <Canvas
-        style={{ background: '#f0f0f0' }}
+        style={{ background: '#1a1611' }}
         camera={{ position: [cameraX, cameraY, cameraZ], fov: cameraFov }}
         onCreated={({ gl }) => {
           gl.physicallyCorrectLights = true;
           gl.outputEncoding = THREE.sRGBEncoding;
+          gl.shadowMap.enabled = false; // השבתת צללים לביצועים טובים יותר
+          gl.toneMapping = THREE.ReinhardToneMapping;
+          gl.toneMappingExposure = 1.1;
+          gl.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // הגבלת רזולוציה לביצועים
         }}
+        performance={{ min: 0.5 }} // אופטימיזציה לביצועים
       >
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        {/* תאורה סביבתית בסיסית */}
+        <ambientLight intensity={0.3} color="#8b7a5c" />
+        
+        {/* תאורה ממנורת השולחן - עיקרית וחזקה */}
+        <spotLight
+          position={[-1.2, 4.5, 2.2]}
+          angle={Math.PI / 3.5}
+          penumbra={0.3}
+          intensity={6.5}
+          color="#f7dc6f"
+          target-position={[-0.5, 1.5, 2]}
+          distance={8}
+          decay={1.0}
+        />
+        
+        {/* תאורה נוספת לכל השולחן - מוגברת */}
+        <pointLight 
+          position={[0, 3.8, 2.5]} 
+          intensity={4.2} 
+          color="#f4d03f"
+          distance={10}
+          decay={1.4}
+        />
+        
+        {/* תאורה ממסך המחשב - מוגברת משמעותית */}
+        <pointLight 
+          position={[0, 3, 3.2]} 
+          intensity={6.8} 
+          color="#e74c3c"
+          distance={9}
+          decay={1.3}
+        />
+        
+        {/* תאורה נוספת למחשב - מהצד */}
+        <spotLight
+          position={[0.8, 3.5, 3.0]}
+          angle={Math.PI / 4}
+          penumbra={0.2}
+          intensity={5.8}
+          color="#ff6b6b"
+          target-position={[0, 2.8, 3.2]}
+          distance={7}
+          decay={1.2}
+        />
+        
+        {/* תאורה חזקה נוספת לאזור השולחן מלמעלה */}
+        <spotLight
+          position={[0, 5.5, 2.8]}
+          angle={Math.PI / 3}
+          penumbra={0.2}
+          intensity={5.5}
+          color="#ffeb3b"
+          target-position={[0, 2.5, 2.5]}
+          distance={8}
+          decay={1.1}
+        />
+        
+        {/* תאורה נוספת לשולחן מהשמאל */}
+        <pointLight 
+          position={[-1.5, 4, 2.8]} 
+          intensity={4.8} 
+          color="#fff176"
+          distance={8}
+          decay={1.3}
+        />
+        
+        {/* תאורה נוספת לשולחן מהימין */}
+        <pointLight 
+          position={[1.5, 4, 2.8]} 
+          intensity={4.5} 
+          color="#ffcc02"
+          distance={8}
+          decay={1.4}
+        />
+        
+        {/* תאורה לאזור המנורה והמקלדת */}
+        <spotLight
+          position={[-1, 4.2, 3.5]}
+          angle={Math.PI / 5}
+          penumbra={0.1}
+          intensity={5.2}
+          color="#fff59d"
+          target-position={[-0.8, 2.8, 2.8]}
+          distance={6}
+          decay={1.2}
+        />
+        
+        {/* תאורה מהטלוויזיה - חזקה */}
+        <pointLight 
+          position={[-2, 4.8, 0]} 
+          intensity={2.8} 
+          color="#3498db"
+          distance={12}
+          decay={2}
+        />
+        
+ {/* תאורה לפוסטר השמאלי - מוגברת מאוד */}
+ <spotLight
+          position={[-3, 5, 1]}
+          angle={Math.PI / 4.5}
+          penumbra={0.2}
+          intensity={8.5}
+          color="#ff9500"
+          target-position={[-2.5, 3, 0]}
+          distance={12}
+          decay={1.2}
+        />
+        
+        {/* תאורה נוספת לפוסטר השמאלי - מנורת השולחן */}
+        <spotLight
+          position={[-1.2, 4.5, 2.2]}
+          angle={Math.PI / 2.8}
+          penumbra={0.3}
+          intensity={7.5}
+          color="#ffa726"
+          target-position={[-2.8, 3.5, 0]}
+          distance={10}
+          decay={1.1}
+        />
+        
+        {/* תאורה נוספת לפוסטר - מהצד השני */}
+        <pointLight 
+          position={[-3.5, 4, 0.5]} 
+          intensity={6.8} 
+          color="#ff8c00"
+          distance={8}
+          decay={1.5}
+        />
+        
+        {/* תאורה נוספת לפוסטר השמאלי מלמטה */}
+        <pointLight 
+          position={[-2.5, 2, 1.5]} 
+          intensity={4.5} 
+          color="#ffcc5c"
+          distance={8}
+          decay={1.3}
+        />
+        
+        {/* תאורה רכה לפוסטר השמאלי מהחלון */}
+        <spotLight
+          position={[2, 4, 1]}
+          angle={Math.PI / 3}
+          penumbra={0.5}
+          intensity={3.8}
+          color="#fff2cc"
+          target-position={[-2.5, 3.5, 0]}
+          distance={12}
+          decay={1.5}
+        />
+        
+        {/* תאורה מרוכזת נוספת על הפוסטר השמאלי */}
+        <spotLight
+          position={[-2.5, 4.8, 1.5]}
+          angle={Math.PI / 6}
+          penumbra={0.1}
+          intensity={9.2}
+          color="#ffb74d"
+          target-position={[-2.8, 3.2, 0]}
+          distance={8}
+          decay={1.0}
+        />
+        
+        {/* תאורה לפוסטר הימני - Ready Player One */}
+        <spotLight
+          position={[-1.2, 4.5, 2.2]}
+          angle={Math.PI / 4}
+          penumbra={0.3}
+          intensity={4.5}
+          color="#42a5f5"
+          target-position={[-2, 4.5, 0]}
+          distance={9}
+          decay={1.6}
+        />
+        
+        {/* תאורה לחטיף - מוגברת */}
+        <pointLight 
+          position={[1.8, 3, 2.2]} 
+          intensity={3.2} 
+          color="#f39c12"
+          distance={6}
+          decay={1.8}
+        />
+        
+        {/* תאורה נוספת למחשב מלמעלה */}
+        <pointLight 
+          position={[0, 4.5, 3.5]} 
+          intensity={4.8} 
+          color="#ff4757"
+          distance={8}
+          decay={1.3}
+        />
+        
+        {/* תאורה למקלדת והמחשב - מוגברת */}
+        <spotLight
+          position={[-0.5, 3.8, 3.8]}
+          angle={Math.PI / 5}
+          penumbra={0.15}
+          intensity={4.8}
+          color="#ffa502"
+          target-position={[0, 2.5, 3.2]}
+          distance={7}
+          decay={1.3}
+        />
+        
+        {/* תאורה נוספת לג'ויסטיק */}
+        <pointLight 
+          position={[0.5, 3.2, 2.8]} 
+          intensity={3.5} 
+          color="#ffb347"
+          distance={5}
+          decay={1.6}
+        />
+        
+        {/* תאורה לכיסא */}
+        <pointLight 
+          position={[2, 2.5, 3]} 
+          intensity={2.0} 
+          color="#e6c770"
+          distance={6}
+          decay={2}
+        />
+        
+        {/* תאורה כללית לחדר */}
+        <directionalLight 
+          position={[3, 6, 4]} 
+          intensity={1.8} 
+          color="#d4ac5c"
+        />
+        
+        {/* תאורה לחלון */}
+        <pointLight 
+          position={[3, 3, 2]} 
+          intensity={1.2} 
+          color="#95a5a6"
+          distance={8}
+          decay={2}
+        />
+
         <Suspense fallback={null}>
           <Model setHovered={setHovered} />
-          <Environment preset="apartment" />
+          <Environment 
+            preset="night" 
+            background={false}
+            intensity={0.15}
+          />
         </Suspense>
         <LimitedControls />
       </Canvas>
@@ -437,14 +744,15 @@ const Model3D = () => {
         position: 'absolute',
         bottom: '20px',
         right: '20px',
-        background: 'rgba(0,0,0,0.7)',
+        background: 'rgba(0,0,0,0.8)',
         color: 'white',
-        padding: '10px',
-        borderRadius: '5px',
+        padding: '12px',
+        borderRadius: '8px',
         fontFamily: 'Arial, sans-serif',
         fontSize: '14px',
         zIndex: 1000,
-        direction: 'rtl'
+        direction: 'rtl',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
       }}>
         לחץ על מקש רווח (Space) לחזרה למבט המקורי
       </div>
@@ -454,7 +762,7 @@ const Model3D = () => {
           position: 'absolute',
           top: '20px',
           right: '20px',
-          background: 'rgba(0,0,0,0.7)',
+          background: 'rgba(0,0,0,0.8)',
           color: 'white',
           padding: '10px',
           borderRadius: '5px',
