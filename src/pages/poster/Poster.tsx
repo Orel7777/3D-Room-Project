@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 // תמונות הפוסטרים - נתיבים יחסיים
@@ -35,6 +35,12 @@ const secondRowPosters: PosterItem[] = [
 
 const Poster = () => {
   const [selectedPoster, setSelectedPoster] = useState<PosterItem | null>(null);
+  const [showIntroDialog, setShowIntroDialog] = useState<boolean>(true);
+  
+  // פונקציה לסגירת הדיאלוג הפותח
+  const closeIntroDialog = () => {
+    setShowIntroDialog(false);
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#e9d8c3] py-4 px-4 flex justify-center items-center">
@@ -97,6 +103,61 @@ const Poster = () => {
             >
               ×
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* דיאלוג פתיחה - מוצג רק אם showIntroDialog הוא true */}
+      {showIntroDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div 
+            className="bg-[#E9D8C3] border-8 border-[#3B2F2F] p-8 flex flex-col items-center justify-center"
+            style={{ width: '811px', maxWidth: '90vw', minHeight: '460px' }}
+          >
+            <h1 
+              className="text-[#3B2F2F] text-center uppercase font-bold"
+              style={{ 
+                fontFamily: "'Bebas Neue', sans-serif", 
+                fontSize: '64px',
+                lineHeight: '127%',
+                letterSpacing: '0%',
+                fontWeight: 400
+              }}
+            >
+              EASTER EGGS INSIDE MOVIE POSTERS
+            </h1>
+            
+            <div className="my-4 w-full flex justify-center">
+              <p 
+                className="text-[#3B2F2F] text-center"
+                style={{ 
+                  fontFamily: "'Work Sans', sans-serif", 
+                  fontSize: '23px',
+                  lineHeight: '133%',
+                  letterSpacing: '0%',
+                  fontWeight: 400,
+                  width: '635px'
+                }}
+              >
+                Movie posters hold more than meets the eye.<br />
+                Each one contains a blurred hidden message.<br />
+                Can you find them all?
+              </p>
+            </div>
+            
+            <div className="mt-10">
+              <button 
+                className="bg-[#E9D8C3] border-[#3B2F2F] border-8 text-[#3B2F2F] uppercase font-bold hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all ease-out duration-300 flex items-center justify-center "
+                style={{ 
+                  width: '218px', 
+                  height: '85px',
+                  marginTop: '55px'
+                }}
+                onClick={closeIntroDialog}
+              >
+                EXPLORE
+              </button>
+            </div>
           </div>
         </div>
       )}
