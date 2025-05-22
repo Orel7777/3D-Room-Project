@@ -59,7 +59,7 @@ function LoadingScreen() {
       zIndex: 9999
     }}>
       <div>
-        <div>טוען מודל 3D...</div>
+        <div>Loading...</div>
         <div style={{ marginTop: '20px', fontSize: '16px' }}>אנא המתן</div>
       </div>
     </div>
@@ -248,6 +248,26 @@ function Model({ setHovered }) {
                 mat.roughness = 0.3; // פחות חספוס = יותר זוהר
                 mat.metalness = 0.1; // מעט מתכתיות
                 mat.envMapIntensity = 1.5; // השתקפות חזקה יותר מהסביבה
+                
+                // שיפור הפוסטר השמאלי להיות מואר יותר
+                if (object.name.includes("Poster") || object.name.includes("poster") || object.name.includes("Frame")) {
+                  // חומר מבריק יותר עם פליטה עצמית
+                  mat.roughness = 0.08; // הפחתה נוספת של החספוס
+                  mat.metalness = 0.02; // הפחתת המתכתיות לקבלת ברק טבעי יותר
+                  mat.envMapIntensity = 3.5; // הגדלת ההשתקפות
+                  
+                  // צבע חזק יותר (הבהרה)
+                  if (mat.color) {
+                    mat.color.multiplyScalar(3.2); // הגברת בהירות משמעותית מאוד
+                  }
+                  
+                  // הוספת פליטת אור לפוסטר
+                  if (object.name.includes("Once") || object.name.includes("Hollywood")) {
+                    // פוסטר שמאלי - פליטה בגוון כתום-אדום
+                    mat.emissive = new THREE.Color("#ff5500"); // צבע אדום-כתום יותר בוהק
+                    mat.emissiveIntensity = 1.2; // הגברת עוצמת הפליטה פי 2
+                  }
+                }
               }
             });
           } else {
@@ -255,6 +275,26 @@ function Model({ setHovered }) {
               object.material.roughness = 0.3;
               object.material.metalness = 0.1;
               object.material.envMapIntensity = 1.5;
+              
+              // שיפור הפוסטר השמאלי להיות מואר יותר
+              if (object.name.includes("Poster") || object.name.includes("poster") || object.name.includes("Frame")) {
+                // חומר מבריק יותר עם פליטה עצמית
+                object.material.roughness = 0.08; // הפחתה נוספת של החספוס
+                object.material.metalness = 0.02; // הפחתת המתכתיות לקבלת ברק טבעי יותר
+                object.material.envMapIntensity = 3.5; // הגדלת ההשתקפות
+                
+                // צבע חזק יותר (הבהרה)
+                if (object.material.color) {
+                  object.material.color.multiplyScalar(3.2); // הגברת בהירות משמעותית מאוד
+                }
+                
+                // הוספת פליטת אור לפוסטר
+                if (object.name.includes("Once") || object.name.includes("Hollywood")) {
+                  // פוסטר שמאלי - פליטה בגוון כתום-אדום
+                  object.material.emissive = new THREE.Color("#ff5500"); // צבע אדום-כתום יותר בוהק
+                  object.material.emissiveIntensity = 1.2; // הגברת עוצמת הפליטה פי 2
+                }
+              }
             }
           }
         }
@@ -585,69 +625,63 @@ const Model3D = () => {
           decay={2}
         />
         
- {/* תאורה לפוסטר השמאלי - מוגברת מאוד */}
- <spotLight
+        {/* תאורה לפוסטר השמאלי - מוגברת מאוד יותר */}
+        <spotLight
           position={[-3, 5, 1]}
-          angle={Math.PI / 4.5}
-          penumbra={0.2}
-          intensity={8.5}
-          color="#ff9500"
+          angle={Math.PI / 4.2}
+          penumbra={0.15}
+          intensity={14.5}
+          color="#ff8000"
           target-position={[-2.5, 3, 0]}
           distance={12}
-          decay={1.2}
+          decay={1.0}
         />
         
-        {/* תאורה נוספת לפוסטר השמאלי - מנורת השולחן */}
+        {/* תאורה מרוכזת וחזקה מאוד לפוסטר השמאלי */}
+        <spotLight
+          position={[-2.8, 4.2, 1.2]}
+          angle={Math.PI / 5.5}
+          penumbra={0.1}
+          intensity={18.0}
+          color="#ff6000"
+          target-position={[-2.8, 3.0, 0]}
+          distance={8}
+          decay={0.8}
+        />
+        
+        {/* תאורה מיוחדת לחלק העליון של הפוסטר השמאלי */}
+        <spotLight
+          position={[-3.2, 5.5, 1.0]}
+          angle={Math.PI / 7}
+          penumbra={0.05}
+          intensity={12.5}
+          color="#ffb74d"
+          target-position={[-2.9, 4.5, 0]}
+          distance={6}
+          decay={0.9}
+        />
+        
+        {/* תאורה נוספת מהמנורה לפוסטר השמאלי - חזקה יותר */}
         <spotLight
           position={[-1.2, 4.5, 2.2]}
-          angle={Math.PI / 2.8}
-          penumbra={0.3}
-          intensity={7.5}
+          angle={Math.PI / 2.6}
+          penumbra={0.2}
+          intensity={15.0}
           color="#ffa726"
           target-position={[-2.8, 3.5, 0]}
           distance={10}
-          decay={1.1}
+          decay={0.9}
         />
         
-        {/* תאורה נוספת לפוסטר - מהצד השני */}
-        <pointLight 
-          position={[-3.5, 4, 0.5]} 
-          intensity={6.8} 
-          color="#ff8c00"
-          distance={8}
-          decay={1.5}
-        />
-        
-        {/* תאורה נוספת לפוסטר השמאלי מלמטה */}
-        <pointLight 
-          position={[-2.5, 2, 1.5]} 
-          intensity={4.5} 
-          color="#ffcc5c"
-          distance={8}
-          decay={1.3}
-        />
-        
-        {/* תאורה רכה לפוסטר השמאלי מהחלון */}
+        {/* תאורה נוספת לפוסטר - ממוקדת בחלק התחתון */}
         <spotLight
-          position={[2, 4, 1]}
-          angle={Math.PI / 3}
-          penumbra={0.5}
-          intensity={3.8}
-          color="#fff2cc"
-          target-position={[-2.5, 3.5, 0]}
-          distance={12}
-          decay={1.5}
-        />
-        
-        {/* תאורה מרוכזת נוספת על הפוסטר השמאלי */}
-        <spotLight
-          position={[-2.5, 4.8, 1.5]}
+          position={[-3.2, 3.0, 1.2]}
           angle={Math.PI / 6}
           penumbra={0.1}
-          intensity={9.2}
-          color="#ffb74d"
-          target-position={[-2.8, 3.2, 0]}
-          distance={8}
+          intensity={10.0}
+          color="#ff9100"
+          target-position={[-2.9, 2.0, 0]}
+          distance={7}
           decay={1.0}
         />
         
