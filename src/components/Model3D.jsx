@@ -674,6 +674,13 @@ function Model({ setHovered }) {
       const name = targetObj.userData.name;
       const description = targetObj.userData.description || name;
 
+      // מעבר לעמוד הפוסטרים כשלוחצים על פוסטר
+      if (name === "Poster" || targetObj.name === "Plane012") {
+        // משתמשים ב-window.location כי אנחנו מחוץ למרחב של React Router
+        window.location.href = '/poster';
+        return;
+      }
+
       const meshInfo = {
         name: targetObj.name,
         type: targetObj.type,
