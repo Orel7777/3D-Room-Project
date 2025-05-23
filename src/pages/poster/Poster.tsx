@@ -44,7 +44,37 @@ const Poster = () => {
 
   return (
     <div className="min-h-screen w-full bg-[#e9d8c3] py-4 px-4 flex justify-center items-center">
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto relative">
+        {/* כפתור X בפינה הימנית העליונה */}
+        <button
+          className="fixed top-[15px] right-[15px] w-[80px] h-[80px] border-[8px] border-[#3B2F2F] text-[#3B2F2F] flex items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50"
+          aria-label="Close"
+          style={{ 
+            fontFamily: "'Bebas Neue', sans-serif", 
+            fontSize: '60px',
+            lineHeight: '127%',
+            fontWeight: 400,
+            letterSpacing: '0%'
+          }}
+        >
+          X
+        </button>
+        
+        {/* כפתור חץ בצד ימין באמצע */}
+        <button
+      className="fixed top-1/2 -translate-y-1/2 right-[15px] w-[95px] h-[154px] border-[8px] border-[#3B2F2F] text-[#3B2F2F] flex items-center items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50"
+      aria-label="Next"
+      style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: '180px',
+        lineHeight: '1',
+        fontWeight: 400,
+        letterSpacing: '0%'
+      }}
+    >
+      &gt;
+    </button>
+        
         {/* רשת פוסטרים */}
         <div className="flex flex-col gap-4 p-4 bg-[#e9d8c3] rounded-md mx-auto">
           {/* שורה ראשונה - 4 פוסטרים */}
@@ -88,7 +118,7 @@ const Poster = () => {
       </div>
       
       {/* כפתור חזרה לחדר */}
-      <Link to="/" className="absolute top-4 right-4 px-4 py-2 bg-neutral-800 text-white rounded font-bold hover:bg-neutral-700 transition-colors">
+      <Link to="/" className="absolute top-4 left-4 px-4 py-2 bg-neutral-800 text-white rounded font-bold hover:bg-neutral-700 transition-colors">
         חזרה לחדר
       </Link>
 
@@ -147,10 +177,15 @@ const Poster = () => {
             
             <div className="mt-10">
               <button 
-                className="bg-[#E9D8C3] border-[#3B2F2F] border-8 text-[#3B2F2F] uppercase font-bold hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all ease-out duration-300 flex items-center justify-center "
+                className="bg-[#E9D8C3] border-[#3B2F2F] border-8 text-[#3B2F2F] uppercase font-bold hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all ease-out duration-300 flex items-center justify-center"
                 style={{ 
                   width: '218px', 
                   height: '85px',
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: '40px',
+                  lineHeight: '137%',
+                  fontWeight: 400,
+                  letterSpacing: '0%',
                   marginTop: '55px'
                 }}
                 onClick={closeIntroDialog}
