@@ -71,7 +71,7 @@ const HomePage = ({ onLookCloser }) => {
       </button>
       <div style={{
         position: 'absolute',
-        right: 0,
+        right: 50,
         top: 0,
         height: '100vh',
         display: 'flex',
