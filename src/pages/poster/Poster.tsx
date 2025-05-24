@@ -27,9 +27,9 @@ const firstRowPosters: PosterItem[] = [
 
 // רשימה של תמונות שורה שנייה
 const secondRowPosters: PosterItem[] = [
-  { src: captainMarvel, alt: "Captain Marvel" },
   { src: tenCloverfieldLane, alt: "10 Cloverfield Lane" },
   { src: darkKnight, alt: "The Dark Knight" },
+  { src: captainMarvel, alt: "Captain Marvel" },
   { src: passengers, alt: "Passengers" }
 ];
 
@@ -43,92 +43,77 @@ const Poster = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#e9d8c3] py-4 px-4 flex justify-center items-center">
-      <div className="w-full max-w-7xl mx-auto relative">
-        {/* כפתור X בפינה הימנית העליונה */}
-        <button
-          className="fixed top-[15px] right-[15px] w-[80px] h-[80px] border-[8px] border-[#3B2F2F] text-[#3B2F2F] flex items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50"
-          aria-label="Close"
-          style={{ 
-            fontFamily: "'Bebas Neue', sans-serif", 
-            fontSize: '60px',
-            lineHeight: '127%',
-            fontWeight: 400,
-            letterSpacing: '0%'
-          }}
-        >
-          X
-        </button>
-        
-        {/* כפתור חץ בצד ימין באמצע */}
-        <button
-      className="fixed top-1/2 -translate-y-1/2 right-[15px] w-[95px] h-[154px] border-[8px] border-[#3B2F2F] text-[#3B2F2F] flex items-center items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50"
-      aria-label="Next"
-      style={{
-        fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: '180px',
-        lineHeight: '1',
-        fontWeight: 400,
-        letterSpacing: '0%'
-      }}
-    >
-      &gt;
-    </button>
-        
-        {/* רשת פוסטרים */}
-        <div className="flex flex-col gap-4 p-4 bg-[#e9d8c3] rounded-md mx-auto">
-          {/* שורה ראשונה - 4 פוסטרים */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {firstRowPosters.map((poster, index) => (
-              <div 
-                key={`row1-${index}`} 
-                className="aspect-[2/3] transform transition-all duration-300 hover:scale-105 shadow-lg border-2 border-neutral-800 overflow-hidden cursor-pointer"
-                onClick={() => setSelectedPoster(poster)}
-              >
-                <img src={poster.src} alt={poster.alt} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
-          
-          {/* שורה שנייה - 4 פוסטרים */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {secondRowPosters.map((poster, index) => (
-              <div 
-                key={`row2-${index}`} 
-                className={`aspect-[2/3] transform transition-all duration-300 hover:scale-105 shadow-lg ${
-                  poster.src === tenCloverfieldLane ? 'border-4 border-blue-600' : 'border-2 border-neutral-800'
-                } overflow-hidden cursor-pointer`}
-                onClick={() => setSelectedPoster(poster)}
-              >
-                <img src={poster.src} alt={poster.alt} className="w-full h-full object-cover" />
-              </div>
-            ))}
-          </div>
+    <div className="min-h-screen w-full bg-[#e9d8c3] flex justify-center items-center p-12">
+      {/* כפתור X בפינה הימנית העליונה */}
+      <button
+        className="fixed top-4 right-4 w-12 h-12 border-2 border-[#3B2F2F] text-[#3B2F2F] flex items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50 text-2xl font-bold"
+        aria-label="Close"
+      >
+        X
+      </button>
+      
+      {/* כפתור חץ בצד ימין באמצע */}
+      <button
+        className="fixed top-1/2 -translate-y-1/2 right-4 w-12 h-16 border-2 border-[#3B2F2F] text-[#3B2F2F] flex items-center justify-center bg-[#E9D8C3] hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all duration-300 ease-out z-50 text-3xl font-bold"
+        aria-label="Next"
+      >
+        &gt;
+      </button>
+      
+      {/* מיכל ראשי לפוסטרים */}
+      <div className="w-full max-w-5xl mx-auto px-12">
+        {/* שורה ראשונה - 4 פוסטרים */}
+        <div className="grid grid-cols-4 gap-8 mb-8">
+          {firstRowPosters.map((poster, index) => (
+            <div 
+              key={`row1-${index}`} 
+              className="aspect-[2/3] transform transition-all duration-300 hover:scale-105 shadow-xl border-4 border-black overflow-hidden cursor-pointer bg-white max-w-xs mx-auto"
+              onClick={() => setSelectedPoster(poster)}
+            >
+              <img 
+                src={poster.src} 
+                alt={poster.alt} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+          ))}
         </div>
         
-        {/* כפתורי ניווט */}
-        <div className="absolute top-1/2 -translate-y-1/2 w-full max-w-7xl flex justify-between px-2 pointer-events-none">
-          <button className="w-10 h-10 bg-black/70 text-white rounded-full flex items-center justify-center pointer-events-auto hover:bg-black/90 transition-colors">
-            X
-          </button>
-          <button className="w-10 h-10 bg-black/70 text-white rounded-full flex items-center justify-center pointer-events-auto hover:bg-black/90 transition-colors">
-            &gt;
-          </button>
+        {/* שורה שנייה - 4 פוסטרים */}
+        <div className="grid grid-cols-4 gap-8">
+          {secondRowPosters.map((poster, index) => (
+            <div 
+              key={`row2-${index}`} 
+              className={`aspect-[2/3] transform transition-all duration-300 hover:scale-105 shadow-xl ${
+                poster.src === darkKnight ? 'border-4 border-blue-600' : 'border-4 border-black'
+              } overflow-hidden cursor-pointer bg-white max-w-xs mx-auto`}
+              onClick={() => setSelectedPoster(poster)}
+            >
+              <img 
+                src={poster.src} 
+                alt={poster.alt} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+          ))}
         </div>
       </div>
       
       {/* כפתור חזרה לחדר */}
-      <Link to="/" className="absolute top-4 left-4 px-4 py-2 bg-neutral-800 text-white rounded font-bold hover:bg-neutral-700 transition-colors">
+      <Link 
+        to="/" 
+        className="absolute top-4 left-4 px-4 py-2 bg-neutral-800 text-white rounded font-bold hover:bg-neutral-700 transition-colors text-sm"
+      >
         חזרה לחדר
       </Link>
 
       {/* תצוגה מוגדלת של פוסטר נבחר */}
       {selectedPoster && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setSelectedPoster(null)}>
-          <div className="relative max-w-2xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
-            <img src={selectedPoster.src} alt={selectedPoster.alt} className="max-w-full max-h-[90vh] object-contain" />
+          <div className="relative max-w-2xl max-h-[80vh]" onClick={e => e.stopPropagation()}>
+            <img src={selectedPoster.src} alt={selectedPoster.alt} className="max-w-full max-h-[80vh] object-contain" />
             <button 
-              className="absolute top-2 right-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center"
+              className="absolute top-2 right-2 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-lg"
               onClick={() => setSelectedPoster(null)}
             >
               ×
@@ -141,14 +126,13 @@ const Poster = () => {
       {showIntroDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div 
-            className="bg-[#E9D8C3] border-8 border-[#3B2F2F] p-8 flex flex-col items-center justify-center"
-            style={{ width: '811px', maxWidth: '90vw', minHeight: '460px' }}
+            className="bg-[#E9D8C3] border-5 border-[#3B2F2F] p-8 flex flex-col items-center justify-center max-w-lg mx-4"
           >
             <h1 
-              className="text-[#3B2F2F] text-center uppercase font-bold"
+              className="text-[#3B2F2F] text-center uppercase font-bold mb-6"
               style={{ 
                 fontFamily: "'Bebas Neue', sans-serif", 
-                fontSize: '64px',
+                fontSize: '48px',
                 lineHeight: '127%',
                 letterSpacing: '0%',
                 fontWeight: 400
@@ -157,42 +141,34 @@ const Poster = () => {
               EASTER EGGS INSIDE MOVIE POSTERS
             </h1>
             
-            <div className="my-4 w-full flex justify-center">
-              <p 
-                className="text-[#3B2F2F] text-center"
-                style={{ 
-                  fontFamily: "'Work Sans', sans-serif", 
-                  fontSize: '23px',
-                  lineHeight: '133%',
-                  letterSpacing: '0%',
-                  fontWeight: 400,
-                  width: '635px'
-                }}
-              >
-                Movie posters hold more than meets the eye.<br />
-                Each one contains a blurred hidden message.<br />
-                Can you find them all?
-              </p>
-            </div>
+            <p 
+              className="text-[#3B2F2F] text-center mb-8"
+              style={{ 
+                fontFamily: "'Work Sans', sans-serif", 
+                fontSize: '18px',
+                lineHeight: '133%',
+                letterSpacing: '0%',
+                fontWeight: 400
+              }}
+            >
+              Movie posters hold more than meets the eye.<br />
+              Each one contains a blurred hidden message.<br />
+              Can you find them all?
+            </p>
             
-            <div className="mt-10">
-              <button 
-                className="bg-[#E9D8C3] border-[#3B2F2F] border-8 text-[#3B2F2F] uppercase font-bold hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all ease-out duration-300 flex items-center justify-center"
-                style={{ 
-                  width: '218px', 
-                  height: '85px',
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: '40px',
-                  lineHeight: '137%',
-                  fontWeight: 400,
-                  letterSpacing: '0%',
-                  marginTop: '55px'
-                }}
-                onClick={closeIntroDialog}
-              >
-                EXPLORE
-              </button>
-            </div>
+            <button 
+              className="bg-[#E9D8C3] border-[#3B2F2F] border-4 text-[#3B2F2F] uppercase font-bold hover:bg-[#3B2F2F] hover:text-[#E9D8C3] transition-all ease-out duration-300 flex items-center justify-center px-8 py-4"
+              style={{ 
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '32px',
+                lineHeight: '137%',
+                fontWeight: 400,
+                letterSpacing: '0%'
+              }}
+              onClick={closeIntroDialog}
+            >
+              EXPLORE
+            </button>
           </div>
         </div>
       )}
