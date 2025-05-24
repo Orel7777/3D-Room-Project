@@ -71,147 +71,7 @@ function LoadingScreen() {
   );
 }
 
-/**
- * Creates an improved outline effect for a given 3D object.
- * For thin objects (like TV screens and posters), it uses EdgesGeometry for a clear line outline.
- * For solid objects, it uses a scaled mesh with a BackSide material for a halo effect.
- * @param {THREE.Mesh} obj - The Three.js mesh object to create an outline for.
- */
-function createOutlineEffect(obj) {
-  try {
-    if (!obj.geometry) {
-      console.warn(`אין גיאומטריה לאובייקט ${obj.name}, לא ניתן ליצור מסגרת.`);
-      return;
-    }
 
-    let outlineMesh;
-    const outlineColor = 0xffff00; // Bright yellow
-
-    // Check if the object is a thin plane (like a TV screen or poster)
-    const isThinPlane = obj.name.includes("Plane") || obj.name.includes("TV") || obj.name.includes("Poster");
-
-    if (isThinPlane) {
-      // For thin planes, use EdgesGeometry to create a distinct line outline
-      const edges = new THREE.EdgesGeometry(obj.geometry);
-      const lineMaterial = new THREE.LineBasicMaterial({
-        color: outlineColor,
-        linewidth: 2, // Line width (may not be supported on all renderers)
-        transparent: true,
-        opacity: 1.0,
-        depthTest: false, // Render on top of other objects
-        depthWrite: false, // Do not write to depth buffer
-      });
-      outlineMesh = new THREE.LineSegments(edges, lineMaterial);
-
-      // Slightly scale up for visibility and prevent z-fighting
-      outlineMesh.scale.copy(obj.scale).multiplyScalar(1.02);
-      // Adjust position slightly forward for planes to prevent z-fighting
-      // This assumes the plane's normal is generally along the Z-axis in its local space.
-      const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(obj.quaternion);
-      outlineMesh.position.copy(obj.position).add(normal.multiplyScalar(0.01));
-
-    } else {
-      // For solid meshes, use a scaled mesh with BackSide material for a solid outline/halo
-      const outlineGeometry = obj.geometry.clone();
-      const outlineMaterial = new THREE.MeshBasicMaterial({
-        color: outlineColor,
-        side: THREE.BackSide, // Render only the back side to create an outline effect
-        transparent: true,
-        opacity: 1.0,
-        depthTest: false, // Render on top of other objects
-        depthWrite: false, // Do not write to depth buffer
-      });
-      outlineMesh = new THREE.Mesh(outlineGeometry, outlineMaterial);
-
-      outlineMesh.position.copy(obj.position);
-      outlineMesh.quaternion.copy(obj.quaternion);
-      outlineMesh.scale.copy(obj.scale).multiplyScalar(1.05); // Increase scale for a more noticeable outline
-    }
-
-    // Ensure the outline mesh updates its matrix automatically
-    outlineMesh.matrixAutoUpdate = true;
-    // Set a high renderOrder to ensure it's drawn on top of everything else
-    outlineMesh.renderOrder = 999;
-    // Initially hide the outline
-    outlineMesh.visible = false;
-
-    // Add the outline to the parent of the original object
-    if (obj.parent) {
-      obj.parent.add(outlineMesh);
-    } else {
-      console.warn("אין הורה לאובייקט, לא ניתן להוסיף מסגרת.");
-      return;
-    }
-
-    // Store the outline mesh in the original object's userData
-    obj.userData.outlineEffect = true;
-    obj.userData.outlineMesh = outlineMesh;
-
-  } catch (error) {
-    console.error(`שגיאה ביצירת מסגרת לאובייקט ${obj.name}:`, error);
-  }
-}
-
-/**
- * Starts a pulsing animation for the outline effect.
- * The animation changes the opacity and scale of the outline.
- * @param {THREE.Mesh} obj - The original Three.js mesh object.
- */
-function startPulseAnimation(obj) {
-  if (!obj.userData.outlineMesh || !obj.userData.outlineMesh.material) return;
-
-  let intensity = 0;
-  let increasing = true;
-  const maxIntensity = 1.0;
-  const minIntensity = 0.6;
-  const pulseSpeed = 50; // milliseconds for each step (faster pulse)
-
-  // Clear any existing animation to prevent multiple intervals
-  if (obj.userData.pulseAnimation) {
-    clearInterval(obj.userData.pulseAnimation);
-  }
-
-  obj.userData.pulseAnimation = setInterval(() => {
-    try {
-      if (!obj.userData.outlineMesh || !obj.userData.outlineMesh.material) {
-        clearInterval(obj.userData.pulseAnimation);
-        obj.userData.pulseAnimation = null;
-        return;
-      }
-
-      // Update opacity
-      if (increasing) {
-        intensity += 0.05; // Faster pulse
-        if (intensity >= maxIntensity) {
-          intensity = maxIntensity;
-          increasing = false;
-        }
-      } else {
-        intensity -= 0.05; // Faster pulse
-        if (intensity <= minIntensity) {
-          intensity = minIntensity;
-          increasing = true;
-        }
-      }
-
-      obj.userData.outlineMesh.material.opacity = intensity;
-
-      // Update scale for pulse effect (only for Mesh outlines, not LineSegments)
-      // LineSegments typically don't need scale pulsing as their thickness is fixed.
-      if (obj.userData.outlineMesh.isMesh) { // Check if it's a Mesh (BackSide outline)
-        const baseScale = 1.05; // Base scale for the outline
-        const scaleVariation = 0.02; // More noticeable scale variation
-        const newScale = baseScale + (scaleVariation * intensity);
-        obj.userData.outlineMesh.scale.copy(obj.scale).multiplyScalar(newScale);
-      }
-
-    } catch (error) {
-      console.error(`שגיאה באנימציית פעימה לאובייקט ${obj.name}:`, error);
-      clearInterval(obj.userData.pulseAnimation);
-      obj.userData.pulseAnimation = null;
-    }
-  }, pulseSpeed);
-}
 
 /**
  * Enhances the interaction area of an object by adding an invisible bounding box helper.
@@ -807,31 +667,31 @@ const applyHighlightEffect = (obj) => {
     const addGlowToMaterial = (material) => {
       if (!material) return;
       
-      // מגדיר את צבע ה-emissive לצהוב בוהק
-      material.emissive = new THREE.Color(0xffff00);
+      // מגדיר את צבע ה-emissive לאפור בהיר (#f1eded)
+      material.emissive = new THREE.Color(0xf1eded);
       material.emissiveIntensity = 1.0;
       
       // טיפול מיוחד בפוסטר שמאלי (Plane012)
       if (obj.name === "Plane012") {
         material.emissiveIntensity = 1.5;
-        material.emissive = new THREE.Color(0xffee00);
+        material.emissive = new THREE.Color(0xf1eded);
       }
       
       // טיפול מיוחד באובייקטי טלוויזיה
       if (obj.userData.name === "TV" || obj.name.includes("TV")) {
-        material.emissive = new THREE.Color(0xffdd00);
+        material.emissive = new THREE.Color(0xf1eded);
         material.emissiveIntensity = 1.5;
       }
       
       // טיפול מיוחד לחטיף Cube008
       if (obj.name === "Cube008" || obj.name.includes("Cube008")) {
-        material.emissive = new THREE.Color(0xffff00);
+        material.emissive = new THREE.Color(0xf1eded);
         material.emissiveIntensity = 1.8;
       }
       
       // טיפול מיוחד לבסיס (ג'ויסטיק)
       if (obj.name === "base" || obj.name.includes("base")) {
-        material.emissive = new THREE.Color(0xffff00);
+        material.emissive = new THREE.Color(0xf1eded);
         material.emissiveIntensity = 2.0;
       }
     };
