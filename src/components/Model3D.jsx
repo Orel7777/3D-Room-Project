@@ -66,7 +66,6 @@ function LoadingScreen() {
     }}>
       <div>
         <div>Loading...</div>
-        <div style={{ marginTop: '20px', fontSize: '16px' }}>אנא המתן</div>
       </div>
     </div>
   );
