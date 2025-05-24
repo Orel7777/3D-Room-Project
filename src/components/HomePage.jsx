@@ -4,14 +4,14 @@ const HomePage = ({ onLookCloser }) => {
   const [hover, setHover] = useState(false)
 
   const buttonStyle = {
-    width: '275px',
-    height: '86px',
-    background: hover ? '#F5E8D4' : '#3B2F2F',
-    color: hover ? '#3B2F2F' : '#F5E8D4',
+    width: '410px',
+    height: '128px',
+    background: hover ? '#FFFFFF' : '#3B2F2F',
+    color: hover ? '#3B2F2F' : '#FFFFFF',
     fontFamily: 'Bebas Neue, Arial, sans-serif',
     fontWeight: 400,
-    fontSize: '32px',
-    lineHeight: '86px',
+    fontSize: '70px',
+    lineHeight: '128px',
     textAlign: 'center',
     textTransform: 'uppercase',
     border: hover ? '5px solid #3B2F2F' : 'none',
@@ -22,7 +22,7 @@ const HomePage = ({ onLookCloser }) => {
     marginTop: '7px',
     padding: 0,
     display: 'block',
-    transition: 'all 0.15s cubic-bezier(.4,0,.2,1)',
+    transition: 'all 0.3s ease-out',
   }
 
   return (
