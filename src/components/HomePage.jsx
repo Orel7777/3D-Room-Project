@@ -69,6 +69,26 @@ const HomePage = ({ onLookCloser }) => {
       >
         LOOK CLOSER
       </button>
+      <div style={{
+        position: 'absolute',
+        right: 0,
+        top: 0,
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        pointerEvents: 'none',
+      }}>
+        <img 
+          src="./glb/Group 97 (1).png" 
+          alt="Design element" 
+          style={{
+            height: '100vh',
+            width: 'auto',
+            maxHeight: '100%',
+          }} 
+        />
+      </div>
     </div>
   )
 }
