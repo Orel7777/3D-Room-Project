@@ -7,7 +7,7 @@ const HomePage = ({ onLookCloser }) => {
     width: '410px',
     height: '128px',
     background: hover ? '#FFFFFF' : '#3B2F2F',
-    color: hover ? '#3B2F2F' : '#FFFFFF',
+    color: hover ? '#3B2F2F' : '#e9d8c3',
     fontFamily: 'Bebas Neue, Arial, sans-serif',
     fontWeight: 400,
     fontSize: '70px',
