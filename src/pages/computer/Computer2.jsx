@@ -33,7 +33,7 @@ const Computer2 = () => {
   const imageConfigs = [
     { path: '/computer/pictures/page2/main/1.jpg', alt: 'Game 5', route: '/game5' },
     { path: '/computer/pictures/page2/main/2.jpg', alt: 'Game 6', route: '/game6' },
-    { path: '/computer/pictures/page2/main/3.jpg', alt: 'Game 7', route: '/game7' },
+    { path: '/computer/pictures/page2/main/3.webp', alt: 'Game 7', route: '/game7' },
     { path: '/computer/pictures/page2/main/4.jpg', alt: 'Game 8', route: '/game8' },
   ];
 
